@@ -20,9 +20,11 @@ import Data.Maybe
 import Data.Set      ( Set )
 import Data.Set      qualified as Set
 
-import Prettyprinter
+import Prettyprinter ( (<+>), annotate, brackets, colon, indent, line, punctuate, vsep )
+import Prettyprinter qualified as P
 import Prettyprinter.Util ( putDocW )
 import Prettyprinter.Internal ( Doc(Empty) )
+import Prettyprinter.Render.Terminal as C
 
 import System.Console.ANSI ( clearScreen, setCursorPosition )
 import System.Exit   ( exitFailure)
@@ -135,6 +137,7 @@ main = do
     clear = unless optNoColors do
       clearScreen
       setCursorPosition 0 0
+    putDoc = if optNoColors then putDocW 80 else C.putDoc
 
 
   -- Read expression from file or stdin.
@@ -156,7 +159,8 @@ main = do
 
   clear
   if batch then do
-    showState st
+    -- showState st
+    putDoc $ pretty st
     putStrLn ""
   else putStrLn "(Press ENTER to start)"
 
@@ -164,11 +168,13 @@ main = do
     unless batch do
       getLine
       clear
-      showState s0
+      -- showState s0
+      putDoc $ pretty s0
       hFlush stdout
       getLine
       pure ()
-    showStateA a s
+    -- showStateA a s
+    putDoc $ pretty $ WithAction a s
 
 
 showState :: St -> IO ()
@@ -391,19 +397,39 @@ addConstraint e (Constraints cs) = Constraints $ e : cs
 
 -- * Pretty printing
 
--- class Pretty where
---   pretty :: a -> Doc ann
+-- | Colored documents.
+
+type CDoc = Doc AnsiStyle
+
+annotateExp :: CDoc -> CDoc
+annotateExp = annotate $ colorDull Magenta
+
+annotateTy :: CDoc -> CDoc
+annotateTy = annotate $ colorDull Green
+
+annotateMeta :: CDoc -> CDoc
+annotateMeta = annotate $ color Yellow
+
+class Pretty a where
+  pretty :: a -> CDoc
+
+instance Pretty String where
+  pretty = P.pretty
+
+instance Pretty a => Pretty (Maybe a) where
+  pretty = maybe mempty pretty
 
 instance Pretty St where
   pretty St{ stDerivation = d, stSolution = ms, stConstraints = cs } =
     ruleSep [ pretty d, pretty ms, pretty cs ]
 
-ruleSep :: [Doc ann] -> Doc ann
+ruleSep :: [CDoc] -> CDoc
 ruleSep = vsep . punctuate (line <> pretty (replicate 12 '─')) . filter (not . isEmpty)
-  where
-    isEmpty = \case
-      Empty -> True
-      _ -> False
+
+isEmpty :: Doc ann -> Bool
+isEmpty = \case
+  Empty -> True
+  _ -> False
 
 instance Pretty Derivation where
   pretty = \case
@@ -439,13 +465,13 @@ instance Pretty Ident where
   pretty = pretty . printTree
 
 instance Pretty Exp where
-  pretty = pretty . printTree
+  pretty = annotateExp . pretty . printTree
 
 instance Pretty Ty where
-  pretty = pretty . printTree . tyA
+  pretty = annotateTy . pretty . printTree . tyA
 
 instance Pretty Meta where
-  pretty = pretty . metaString
+  pretty = annotateMeta . pretty . metaString
 
 ($$) :: Doc ann -> Doc ann -> Doc ann
 d1 $$ d2 = d1 <> line <> d2
@@ -453,8 +479,8 @@ d1 $$ d2 = d1 <> line <> d2
 checkMark :: Doc ann -> Doc ann
 checkMark = ("✓" <+>)
 
-judgement :: (Pretty a, Pretty b) => a -> b -> Doc ann
-judgement x t = pretty x <+> colon <+> pretty t
+judgement :: (Pretty a, Pretty b) => a -> b -> CDoc
+judgement x t = annotateExp (pretty x) <+> colon <+> annotateTy (pretty t)
 
 tyA :: Ty -> A.Ty
 tyA = \case

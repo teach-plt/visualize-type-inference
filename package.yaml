@@ -19,13 +19,17 @@ dependencies:
 - mtl
 - optparse-applicative
 - prettyprinter
+- prettyprinter-ansi-terminal
 - pretty-terminal
 - string-qq
 
 language: Haskell2010
 default-extensions:
 - BlockArguments
+- FlexibleInstances
 - ImportQualifiedPost
 - LambdaCase
 - OverloadedStrings
 - RecordWildCards
+- ScopedTypeVariables
+- TypeSynonymInstances
