@@ -86,8 +86,6 @@ data Ty
   | TyFun  Ty Ty
   deriving (Eq, Ord)
 
-data Judgement = Judgement Exp Ty
-
 -- | Derivations are fully-annotated lambda-terms with holes.
 
 data Derivation
@@ -113,15 +111,17 @@ data Action
 data WithAction a = WithAction Action a
 type TypeError = String
 
+newtype Constraints = Constraints { theConstraints :: [Equation] }
+
 data Equation = Equation Ty Ty
   deriving (Eq, Ord)
 
+-- | An equation in solved form.
 data Solution = Solution Meta Ty
-
-newtype Constraints = Constraints { theConstraints :: [Equation] }
 
 type Substitution = Map Meta Ty
 
+-- | Typing context.
 type Context = Map Ident Ty
 
 type M = State St
@@ -137,7 +137,8 @@ main = do
     clear = unless optNoColors do
       clearScreen
       setCursorPosition 0 0
-    putDoc = if optNoColors then putDocW 80 else C.putDoc
+    render :: forall a. Pretty a => a -> IO ()
+    render = (if optNoColors then putDocW 80 else C.putDoc) . pretty
 
 
   -- Read expression from file or stdin.
@@ -159,29 +160,19 @@ main = do
 
   clear
   if batch then do
-    -- showState st
-    putDoc $ pretty st
+    render st
     putStrLn ""
-  else putStrLn "(Press ENTER to start)"
+  else putStrLn "(Press ENTER to step)"
 
   forM_ (zip ss tr) \ (s0, WithAction a s) -> do
     unless batch do
       getLine
       clear
-      -- showState s0
-      putDoc $ pretty s0
+      render s0
       hFlush stdout
       getLine
       pure ()
-    -- showStateA a s
-    putDoc $ pretty $ WithAction a s
-
-
-showState :: St -> IO ()
-showState st = putDocW 80 $ pretty st
-
-showStateA :: Action -> St -> IO ()
-showStateA a st = putDocW 80 $ pretty $ WithAction a st -- $ stDerivation st
+    render $ WithAction a s
 
 -- | Initial type inference problem.
 
@@ -202,6 +193,8 @@ initSt e = St
     m   = Meta{ metaID = mid, metaName = x, metaSuffix = suf }
     t   = TyMeta m
 
+-- | Algorithm C: first collect all constraints, then solve them.
+
 strategyC :: M (Maybe Action)
 strategyC = foldl1 orElse $
   [ stepDerivation
@@ -209,12 +202,16 @@ strategyC = foldl1 orElse $
   , stepConstraints
   ]
 
+-- | Algorithm J: solve a constraint as soon as it arises.
+
 strategyJ :: M (Maybe Action)
 strategyJ = foldl1 orElse
   [ stepSolution
   , stepConstraints
   , stepDerivation
   ]
+
+-- | Combination of tactics.
 
 orElse :: Monad m => m (Maybe Action) -> m (Maybe Action) -> m (Maybe Action)
 orElse c1 c2 = do
@@ -266,7 +263,7 @@ splitFunType x = \case
     t2 <- TyMeta <$> newMeta Nothing
     (t1, t2) <$ equate t (TyFun t1 t2) -- subType (TyFun t1 t2) t
 
--- | Try to apply the last solution
+-- | Try to apply the last solution.
 
 stepSolution :: M (Maybe Action)
 stepSolution = do

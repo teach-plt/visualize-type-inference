@@ -98,7 +98,7 @@ options = do
     switch
       $  long "batch"
       <> short 'b'
-      <> help "Run in batch mode (rather than interactively step-by-step)"
+      <> help "Run in batch mode (rather than interactively step-by-step)."
 
   oJ =
     switch
