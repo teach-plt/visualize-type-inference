@@ -42,3 +42,9 @@ coercions Exp 3;
 token Lambda 'λ' | '\\';
 token Arrow '→' | '-' '>';
 ```
+
+Example runs from source repository:
+```
+stack run -- examples/two.txt
+stack run -- -b <<< "λ x → x x"
+```
