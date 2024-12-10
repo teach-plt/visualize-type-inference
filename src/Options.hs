@@ -18,6 +18,7 @@ import System.IO
 import System.Console.ANSI
   ( hSupportsANSI )
 
+import ColorOption
 import License
 import qualified Paths_visualize_type_inference as Paths
 
@@ -28,11 +29,13 @@ data Options = Options
       -- ^ Run in batch mode (rather than interactively step-by-step).
   , optJ          :: Bool
       -- ^ Algorithm J (immediate substitution) rather than C (constraint collection).
-  , optNoColors   :: Bool
-      -- ^ Turn off colors.
+  , optColor      :: ColorOption
+      -- ^ GNU @--color@ option.
   , optFile       :: Maybe FilePath
       -- ^ The file with the input (optional).
-  } deriving Show
+  , optNoColors   :: Bool
+      -- ^ Turn off colors?  (Default: no.)
+  }
 
 
 self :: String
@@ -51,9 +54,12 @@ version = intercalate "." $ map show $ versionBranch Paths.version
 options :: IO Options
 options = do
   opts <- execParser $ info parser infoMod
-  hSupportsANSI stdout >>= \case
-    True  -> return opts
-    False -> return opts{ optNoColors = True }
+  case optColor opts of
+    Always -> return opts
+    Never  -> return opts{ optNoColors = True }
+    Auto   -> hSupportsANSI stdout >>= \case
+      True  -> return opts
+      False -> return opts{ optNoColors = True }
   where
   parser = programOptions <**>
     (versionOption <*> numericVersionOption <*> licenseOption <*> helper)
@@ -91,8 +97,9 @@ options = do
   programOptions = pure Options
     <*> oBatch
     <*> oJ
-    <*> oNoColors
+    <*> colorOption
     <*> oFile
+    <*> pure False  -- by default, use colors
 
   oBatch =
     switch

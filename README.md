@@ -10,7 +10,8 @@ visualize-type-inference [-b|--batch] [-J] [--no-colors] [FILE]
 Available options:
   -b,--batch           Run in batch mode (rather than interactively step-by-step).
   -J                   Algorithm J: solve and substitute eagerly.
-  --no-colors          Disable colorized output. Automatic if terminal does not support colors.
+  --color when         Specify when colorized output should be generated.
+                       Options: always, never, auto. Default: auto.
   FILE                 The text file containing the lambda-term for type inference.
 
   -V,--version         Show version info.
