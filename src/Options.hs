@@ -13,8 +13,10 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty
   ( pretty, nest, vcat )
 
-import System.Console.Pretty
-  ( Color, Style, color, style, supportsPretty )
+import System.IO
+  ( stdout )
+import System.Console.ANSI
+  ( hSupportsANSI )
 
 import License
 import qualified Paths_visualize_type_inference as Paths
@@ -44,25 +46,12 @@ homepage = concat [ "https://github.com/teach-plt/", self ]
 version :: String
 version = intercalate "." $ map show $ versionBranch Paths.version
 
--- | Apply ANSI style if coloring is enabled in 'Options'.
-
-styleOpt :: Options -> Style -> String -> String
-styleOpt opts = applyWhenColors opts style
-
-colorOpt :: Options -> Color -> String -> String
-colorOpt opts = applyWhenColors opts color
-
-applyWhenColors :: Options -> (a -> b -> b) -> a -> b -> b
-applyWhenColors opts
-  | optNoColors opts = \ _ _ -> id
-  | otherwise        = id
-
 -- | Option parsing and handling
 
 options :: IO Options
 options = do
   opts <- execParser $ info parser infoMod
-  supportsPretty >>= \case
+  hSupportsANSI stdout >>= \case
     True  -> return opts
     False -> return opts{ optNoColors = True }
   where
