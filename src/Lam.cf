@@ -1,0 +1,20 @@
+-- Untyped lambda calculus
+
+entrypoints Exp;
+
+EAbs.  Exp  ::= Lambda Ident Arrow Exp;
+EApp.  Exp2 ::= Exp2 Exp3;
+EId.   Exp3 ::= Ident;
+
+coercions Exp 3;
+
+TId.   Ty1 ::= Ident;
+TArr.  Ty  ::= Ty1 Arrow Ty;
+
+coercions Ty 1;
+
+token Lambda 'λ' | '\\';
+token Arrow '→' | '-' '>';
+
+comment "--";
+comment "{-" "-}";

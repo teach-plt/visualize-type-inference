@@ -1,0 +1,31 @@
+name: visualize-type-inference
+version: 0.0.0.0
+
+executable:
+  source-dirs: src
+  main: Main.hs
+  when:
+    condition: false
+    other-modules:
+    - Lam.ErrM
+    - Lam.Skel
+    - Lam.Test
+
+dependencies:
+- base
+- ansi-terminal
+- array
+- containers
+- mtl
+- optparse-applicative
+- prettyprinter
+- pretty-terminal
+- string-qq
+
+language: Haskell2010
+default-extensions:
+- BlockArguments
+- ImportQualifiedPost
+- LambdaCase
+- OverloadedStrings
+- RecordWildCards
