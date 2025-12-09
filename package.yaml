@@ -1,6 +1,19 @@
 name: visualize-type-inference
 version: 0.0.0.0
 
+author: Andreas Abel
+copyright: Andreas Abel, 2024
+
+synopsis: Simulate simple constraint-based type inference
+description:
+  Constraint-based inference for simple types is traced step-by-step,
+  both for the original algorithm J that eagerly applies substitutions
+  gained from unification, and a more modern conception that
+  separates constraint generation from constraint solving.
+category: Teaching
+
+github: teach-plt/visualize-type-inference
+
 executable:
   source-dirs: src
   main: Main.hs
@@ -12,7 +25,7 @@ executable:
     - Lam.Test
 
 dependencies:
-- base
+- base >= 4.15 && < 5
 - ansi-terminal
 - array
 - containers

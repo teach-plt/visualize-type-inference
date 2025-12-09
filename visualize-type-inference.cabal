@@ -6,6 +6,14 @@ cabal-version: 1.12
 
 name:           visualize-type-inference
 version:        0.0.0.0
+synopsis:       Simulate simple constraint-based type inference
+description:    Constraint-based inference for simple types is traced step-by-step, both for the original algorithm J that eagerly applies substitutions gained from unification, and a more modern conception that separates constraint generation from constraint solving.
+category:       Teaching
+homepage:       https://github.com/teach-plt/visualize-type-inference#readme
+bug-reports:    https://github.com/teach-plt/visualize-type-inference/issues
+author:         Andreas Abel
+maintainer:     Andreas Abel
+copyright:      Andreas Abel, 2024
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -16,6 +24,10 @@ tested-with:
   , GHC == 9.6.7
   , GHC == 9.4.8
   , GHC == 9.2.8
+
+source-repository head
+  type: git
+  location: https://github.com/teach-plt/visualize-type-inference
 
 executable visualize-type-inference
   main-is: Main.hs
@@ -43,7 +55,7 @@ executable visualize-type-inference
   build-depends:
       ansi-terminal
     , array
-    , base
+    , base >=4.15 && <5
     , containers
     , mtl
     , optparse-applicative
