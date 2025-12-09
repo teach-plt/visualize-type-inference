@@ -9,6 +9,7 @@ visualize-type-inference [-b|--batch] [-J] [--no-colors] [FILE]
 
 Available options:
   -b,--batch           Run in batch mode (rather than interactively step-by-step).
+  -s,--slide           An interactive mode more concise than the default.
   -J                   Algorithm J: solve and substitute eagerly.
   --color when         Specify when colorized output should be generated.
                        Options: always, never, auto. Default: auto.
@@ -46,5 +47,6 @@ token Arrow '→' | '-' '>';
 Example runs from source repository:
 ```
 stack run -- examples/two.txt
+stack run -- -s examples/comp.txt
 stack run -- -b <<< "λ x → x x"
 ```
