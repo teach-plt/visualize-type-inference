@@ -35,6 +35,7 @@ executable visualize-type-inference
       FlexibleInstances
       ImportQualifiedPost
       LambdaCase
+      MultiWayIf
       OverloadedStrings
       RecordWildCards
       ScopedTypeVariables

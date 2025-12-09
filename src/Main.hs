@@ -107,7 +107,9 @@ data Action
   | Solve Meta Ty
   | Substitute Meta Ty
   | Fail
+  | Done
 
+data PostAction a = PostAction a Action
 data WithAction a = WithAction Action a
 type TypeError = String
 
@@ -164,22 +166,30 @@ main = do
     putStrLn ""
   else do
     putStrLn "(Press ENTER to step)"
-    when optSlide do
-      getLine
-      clear
-      render $ WithAction (Check "term") st
 
   forM_ (zip ss tr) \ (s0, WithAction a s) -> do
-    unless batch do
-      hFlush stdout
-      getLine
-      clear
-      unless optSlide do
-        render s0
-        hFlush stdout
-        getLine
-        pure ()
-    render $ WithAction a s
+    if | batch ->
+           render $ WithAction a s
+       | optSlide -> do
+           hFlush stdout
+           getLine
+           clear
+           render $ PostAction s0 a
+       | otherwise -> do
+           hFlush stdout
+           getLine
+           clear
+           render s0
+           hFlush stdout
+           getLine
+           render $ WithAction a s
+
+  when optSlide do
+    let WithAction _ s = last tr
+    hFlush stdout
+    getLine
+    clear
+    render $ PostAction s Done
 
 -- | Initial type inference problem.
 
@@ -461,9 +471,13 @@ instance Pretty Action where
     Solve x t      -> "occurs check" <+> pretty x <+> "=" <+> pretty t
     Substitute x t -> "substitute" <+> pretty x <+> ":=" <+> pretty t
     Trivial x      -> "discard trivial equation" <+> pretty x <+> "=" <+> pretty x
+    Done           -> "done"
 
 instance Pretty a => Pretty (WithAction a) where
   pretty (WithAction a d) = line <> "==>" <+> pretty a <> line <> line <> pretty d <> line
+
+instance Pretty a => Pretty (PostAction a) where
+  pretty (PostAction d a) = line <> pretty d <> line <> line <> "==>" <+> pretty a <> line
 
 instance Pretty Ident where
   pretty = pretty . printTree
