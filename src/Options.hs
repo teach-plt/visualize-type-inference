@@ -35,6 +35,8 @@ data Options = Options
       -- ^ The file with the input (optional).
   , optNoColors   :: Bool
       -- ^ Turn off colors?  (Default: no.)
+  , optSlide      :: Bool
+      -- ^ Slide mode?  Less intermediate steps.  (Default: no.)
   }
 
 
@@ -100,12 +102,19 @@ options = do
     <*> colorOption
     <*> oFile
     <*> pure False  -- by default, use colors
+    <*> oSlide
 
   oBatch =
     switch
       $  long "batch"
       <> short 'b'
       <> help "Run in batch mode (rather than interactively step-by-step)."
+
+  oSlide =
+    switch
+      $  long "slide"
+      <> short 's'
+      <> help "Run in slide mode: interactive, omitting repetition of state."
 
   oJ =
     switch

@@ -162,16 +162,23 @@ main = do
   if batch then do
     render st
     putStrLn ""
-  else putStrLn "(Press ENTER to step)"
+  else do
+    putStrLn "(Press ENTER to step)"
+    when optSlide do
+      getLine
+      clear
+      render $ WithAction (Check "term") st
 
   forM_ (zip ss tr) \ (s0, WithAction a s) -> do
     unless batch do
-      getLine
-      clear
-      render s0
       hFlush stdout
       getLine
-      pure ()
+      clear
+      unless optSlide do
+        render s0
+        hFlush stdout
+        getLine
+        pure ()
     render $ WithAction a s
 
 -- | Initial type inference problem.
