@@ -139,6 +139,12 @@ main = do
     clear = unless optNoColors do
       clearScreen
       setCursorPosition 0 0
+    wait = do
+      hFlush stdout
+      getLine
+    next = do
+      wait
+      clear
     render :: forall a. Pretty a => a -> IO ()
     render = (if optNoColors then putDocW 80 else C.putDoc) . pretty
 
@@ -160,36 +166,41 @@ main = do
     tr = evalState (trampolin strategy) st
     ss = st : map (\ (WithAction _ s) -> s) tr
 
-  clear
+  -- In the batch mode, we need to output the initial state here,
+  -- as we won't do it during the loop.
   if batch then do
     render st
     putStrLn ""
   else do
+    clear
     putStrLn "(Press ENTER to step)"
 
+  -- Loop over triples (current state, action, subsequent state).
   forM_ (zip ss tr) \ (s0, WithAction a s) -> do
-    if | batch ->
-           render $ WithAction a s
-       | optSlide -> do
-           hFlush stdout
-           getLine
-           clear
-           render $ PostAction s0 a
-       | otherwise -> do
-           hFlush stdout
-           getLine
-           clear
-           render s0
-           hFlush stdout
-           getLine
-           render $ WithAction a s
+    if
+      -- In the batch mode, we display the action and the subsequent state.
+      | batch -> do
+          render $ WithAction a s
 
+      -- In the --slide mode, we display the current state with the next action.
+      | optSlide -> do
+          next
+          render $ PostAction s0 a
+
+      -- In default mode, we display current state, and after the ok from the user,
+      -- the action and the next state.
+      | otherwise -> do
+          next
+          render s0
+          wait
+          render $ WithAction a s
+
+  -- In the --slide mode, we have not displayed the final state yet.
   when optSlide do
     let WithAction _ s = last tr
-    hFlush stdout
-    getLine
-    clear
+    next
     render $ PostAction s Done
+    putStrLn ""
 
 -- | Initial type inference problem.
 
