@@ -35,6 +35,10 @@ dependencies:
 - prettyprinter-ansi-terminal
 - string-qq
 
+build-tools:
+- alex
+- happy
+
 language: Haskell2010
 default-extensions:
 - BlockArguments

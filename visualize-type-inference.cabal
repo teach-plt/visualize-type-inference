@@ -52,6 +52,9 @@ executable visualize-type-inference
       RecordWildCards
       ScopedTypeVariables
       TypeSynonymInstances
+  build-tools:
+      alex
+    , happy
   build-depends:
       ansi-terminal
     , array
