@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           visualize-type-inference
-version:        0.0.0.0
+version:        0.0.1.0
 synopsis:       Simulate simple constraint-based type inference
 description:    Constraint-based inference for simple types is traced step-by-step, both for the original algorithm J that eagerly applies substitutions gained from unification, and a more modern conception that separates constraint generation from constraint solving.
 category:       Teaching
